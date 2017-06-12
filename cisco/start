@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+import telnetlib
+from getpass import getpass
+import sys
+from lib import hpshell
+
+def checkArgument():
+	if len(sys.argv) != 2:
+		print("http - Connect a switch through HTTP protocal")
+		print("Usage: http [user@]host")
+		print("(If not specified, username is admin.)")
+		sys.exit(0)
+if __name__ == "__main__":
+	checkArgument()
+	print ("connecting ",sys.argv[1],"......")
+	try:
+		tn = telnetlib.Telnet(sys.argv[1],timeout=10)
+	except:
+		print ("can't connect to ",sys.argv[1])
+		sys.exit(0)
+	
+	user = input("Username:")
+	password = getpass('password :')
+	if password:
+		tn.read_until(b'Password: ')
+		tn.write(password.encode('ascii') + b'\n')
+	print (tn.read_very_eager().decode('ascii'))
+	hpshell.run(tn)
