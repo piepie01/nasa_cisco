@@ -14,6 +14,7 @@ class Prompt(Cmd):
 
 	def do_EOF(self, args):
 		"""Logout current switch and exit."""
+		cli.exit(tn)
 		raise SystemExit
 
 	def do_exit(self, args):
@@ -21,26 +22,33 @@ class Prompt(Cmd):
 		cli.exit(tn)
 		raise SystemExit
 
-	def do_showrun(args):
+	def do_showrun(self, args):
 		"""Show switch dashboard information."""
+		cli.showrun(tn,password)
 
-	def do_showintstat(args):
+	def do_showintstat(self, args):
 		"""Show port packet statistics."""
+		cli.showintstat(tn,password)
 
-	def do_showint(args):
+	def do_showint(self, args):
 		"""Show interfaces status."""
+		cli.showint(tn,password)
 
-	def do_showportchannel(args):
+	def do_showportchannel(self, args):
 		"""Show port channel information."""
+		cli.showportchannel(tn,password)
 
-	def do_showvlan(args):
+	def do_showvlan(self, args):
 		"""Show interface VLAN membership."""
+		cli.showvlan(tn,password)
 
-	def do_showvlanid(args):
+	def do_showvlanid(self, args):
 		"""Show VLAN id status."""
+		cli.showvlanid(tn,password)
 
-	def do_showmac(args):
+	def do_showmac(self, args):
 		"""Show mac address table."""
+		cli.showmac(tn,password)
 
 	def do_setinfo(args):
 		"""Set switch name, Location, contact."""
@@ -144,9 +152,12 @@ class Prompt(Cmd):
 		vlan_id = input("Vlan ID?: ")
 prompt = Prompt()
 tn = None
-def run(_tn):
+password = ''
+def run(_tn,_password):
 	global tn
+	global password
 	tn = _tn
+	password = _password
 	prompt.prompt = "(/^o^)/"
 	while True:
 		try:

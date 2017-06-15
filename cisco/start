@@ -3,6 +3,7 @@ import telnetlib
 from getpass import getpass
 import sys
 from lib import hpshell
+import time
 
 def checkArgument():
 	if len(sys.argv) != 2:
@@ -20,9 +21,16 @@ if __name__ == "__main__":
 		sys.exit(0)
 	
 	user = input("Username:")
-	password = getpass('password :')
-	if password:
-		tn.read_until(b'Password: ')
-		tn.write(password.encode('ascii') + b'\n')
+	tn.read_until(b'Password: ')
+	while True:
+		password = getpass('password :')
+		if password:
+			tn.write(password.encode('ascii') + b'\n')
+			time.sleep(0.5)
+			test_pass = tn.read_very_eager().decode('ascii')
+			if test_pass.find("Switch") != -1:
+				break;
+			print ("incorrect  password, please try again")
+	tn.write("terminal length 0".encode('ascii')+b'\n')
 	print (tn.read_very_eager().decode('ascii'))
-	hpshell.run(tn)
+	hpshell.run(tn,password)
