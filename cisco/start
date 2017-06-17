@@ -22,15 +22,18 @@ if __name__ == "__main__":
 	
 	user = input("Username:")
 	tn.read_until(b'Password: ')
+	SwitchName = ''
 	while True:
 		password = getpass('password :')
 		if password:
 			tn.write(password.encode('ascii') + b'\n')
 			time.sleep(0.5)
 			test_pass = tn.read_very_eager().decode('ascii')
-			if test_pass.find("Switch") != -1:
+			if test_pass.find("Password") == -1:
+				temp_list = test_pass.split('\n')
+				SwitchName = temp_list[1][:len(temp_list[1])-1]
 				break;
 			print ("incorrect  password, please try again")
 	tn.write("terminal length 0".encode('ascii')+b'\n')
 	print (tn.read_very_eager().decode('ascii'))
-	hpshell.run(tn,password)
+	hpshell.run(tn,password,SwitchName)

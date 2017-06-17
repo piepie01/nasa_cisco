@@ -7,7 +7,7 @@ from lib import cli
 
 class Prompt(Cmd):
 	def do_showarp(self, args):
-		cli.showArp(tn)
+		cli.showArp(tn,SwitchName)
 	def do_forceexit(self, args):
 		"""Quit the program without logout."""
 		raise SystemExit
@@ -24,36 +24,39 @@ class Prompt(Cmd):
 
 	def do_showrun(self, args):
 		"""Show switch dashboard information."""
-		cli.showrun(tn,password)
+		cli.showrun(tn,password,SwitchName)
 
 	def do_showintstat(self, args):
 		"""Show port packet statistics."""
-		cli.showintstat(tn,password)
+		cli.showintstat(tn,password,SwitchName)
 
 	def do_showint(self, args):
 		"""Show interfaces status."""
-		cli.showint(tn,password)
+		cli.showint(tn,password,SwitchName)
 
 	def do_showportchannel(self, args):
 		"""Show port channel information."""
-		cli.showportchannel(tn,password)
+		cli.showportchannel(tn,password,SwitchName)
 
 	def do_showvlan(self, args):
 		"""Show interface VLAN membership."""
-		cli.showvlan(tn,password)
+		cli.showvlan(tn,password,SwitchName)
 
 	def do_showvlanid(self, args):
 		"""Show VLAN id status."""
-		cli.showvlanid(tn,password)
+		cli.showvlanid(tn,password,SwitchName)
 
 	def do_showmac(self, args):
 		"""Show mac address table."""
-		cli.showmac(tn,password)
+		cli.showmac(tn,password,SwitchName)
 
-	def do_setinfo(args):
+	def do_setinfo(self, args):
 		"""Set switch name, Location, contact."""
-		prompt.prompt = '%s#' % cli.getSwitchName()
-
+		global SwitchName
+		ChangeName = input("Switch name:")
+		cli.setinfo(tn,password,ChangeName)
+		prompt.prompt = ChangeName + '>'
+		SwitchName = ChangeName
 	def do_write(args):
 		"""Save configuration."""
 
@@ -71,22 +74,21 @@ class Prompt(Cmd):
 		while mode != "static" and mode != "dhcp":
 			mode = input("dhcp or static?")
 
-	def do_settime(args):
+	def do_settime(self, args):
 		"""Set SNTP server IP and timezone (support GMT+8 TPE only)."""
-		print("Automatically set timezone to GMT+8(TPE) successfully.")
+		cli.settime(tn,password)
 
-	def do_vlanadd(args):
+	def do_vlanadd(self, args):
 		"""Add a new vlan interface."""
+		cli.vlanadd(tn,password)
 
-	def do_vlandel(args):
+	def do_vlandel(self, args):
 		"""Delete a new vlan interface."""
+		cli.vlandel(tn,password)
 
-	def do_vlanset(args):
+	def do_vlanset(self, args):
 		"""Set interfaces vlan membership."""
-		available_mode = {'t':'tagged', 'u':'untagged', 'e':'exclude'}
-		mode = input("tagged[t]/untagged[u]/exclude[e]?")
-		while mode not in available_mode:
-			mode = input("tagged[t]/untagged[u]/exclude[e]?")
+		cli.vlanset(tn,password)
 
 	def do_gencert(args):
 		"""Generate a new self-signed SSL certificate."""
@@ -153,12 +155,15 @@ class Prompt(Cmd):
 prompt = Prompt()
 tn = None
 password = ''
-def run(_tn,_password):
+SwitchName = ''
+def run(_tn,_password,_SwitchName):
 	global tn
 	global password
+	global SwitchName
 	tn = _tn
 	password = _password
-	prompt.prompt = "(/^o^)/"
+	SwitchName = _SwitchName
+	prompt.prompt = SwitchName + '>'
 	while True:
 		try:
 			prompt.cmdloop("Type exit/forceexit to quit, help for help.")
