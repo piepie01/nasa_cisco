@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-import telnetlib
+from pexpect import pxssh
 from getpass import getpass
 import sys
 from lib import hpshell
+from lib import cli
 import time
 
 def checkArgument():
@@ -13,27 +14,21 @@ def checkArgument():
 		sys.exit(0)
 if __name__ == "__main__":
 	checkArgument()
-	print ("connecting ",sys.argv[1],"......")
-	try:
-		tn = telnetlib.Telnet(sys.argv[1],timeout=10)
-	except:
-		print ("can't connect to ",sys.argv[1])
-		sys.exit(0)
-	
 	user = input("Username:")
-	tn.read_until(b'Password: ')
-	SwitchName = ''
-	while True:
+	print ("connecting ",sys.argv[1],"......")
+	ssh = pxssh.pxssh()
+	for count in range(1,3):
 		password = getpass('password :')
 		if password:
-			tn.write(password.encode('ascii') + b'\n')
-			time.sleep(0.5)
-			test_pass = tn.read_very_eager().decode('ascii')
-			if test_pass.find("Password") == -1:
-				temp_list = test_pass.split('\n')
-				SwitchName = temp_list[1][:len(temp_list[1])-1]
-				break;
-			print ("incorrect  password, please try again")
-	tn.write("terminal length 0".encode('ascii')+b'\n')
-	print (tn.read_very_eager().decode('ascii'))
-	hpshell.run(tn,password,SwitchName)
+			try:
+				ssh.login(sys.argv[1],user,password,auto_prompt_reset=False)
+				break
+			except:
+				print ("incorrect password")
+		if count==3:
+			print ("can't connect to ",sys.argv[1],", or incorrect password")
+			sys.exit(0)
+	
+	ssh.sendline("terminal length 0")
+	SwitchName = cli.getSwitchName(ssh)
+	hpshell.run(ssh,password,SwitchName)

@@ -1,4 +1,4 @@
-import telnetlib
+from pexpect import pxssh
 import time
 from getpass import getpass
 import sys
@@ -7,64 +7,64 @@ from lib import cli
 
 class Prompt(Cmd):
 	def do_showarp(self, args):
-		cli.showArp(tn,SwitchName)
+		cli.showArp(ssh,SwitchName)
 	def do_forceexit(self, args):
 		"""Quit the program without logout."""
 		raise SystemExit
 
 	def do_EOF(self, args):
 		"""Logout current switch and exit."""
-		cli.exit(tn)
+		ssh.logout()
 		raise SystemExit
 
 	def do_exit(self, args):
 		"""Logout current switch and exit."""
-		cli.exit(tn)
+		ssh.logout()
 		raise SystemExit
 
 	def do_showrun(self, args):
 		"""Show switch dashboard information."""
-		cli.showrun(tn,password,SwitchName)
+		cli.showrun(ssh,password,SwitchName)
 
 	def do_showintstat(self, args):
 		"""Show port packet statistics."""
-		cli.showintstat(tn,password,SwitchName)
+		cli.showintstat(ssh,password,SwitchName)
 
 	def do_showint(self, args):
 		"""Show interfaces status."""
-		cli.showint(tn,password,SwitchName)
+		cli.showint(ssh,password,SwitchName)
 
 	def do_showportchannel(self, args):
 		"""Show port channel information."""
-		cli.showportchannel(tn,password,SwitchName)
+		cli.showportchannel(ssh,password,SwitchName)
 
 	def do_showvlan(self, args):
 		"""Show interface VLAN membership."""
-		cli.showvlan(tn,password,SwitchName)
+		cli.showvlan(ssh,password,SwitchName)
 
 	def do_showvlanid(self, args):
 		"""Show VLAN id status."""
-		cli.showvlanid(tn,password,SwitchName)
+		cli.showvlanid(ssh,password,SwitchName)
 
 	def do_showmac(self, args):
 		"""Show mac address table."""
-		cli.showmac(tn,password,SwitchName)
+		cli.showmac(ssh,password,SwitchName)
 
 	def do_setinfo(self, args):
 		"""Set switch name, Location, contact."""
 		global SwitchName
 		ChangeName = input("Switch name:")
-		cli.setinfo(tn,password,ChangeName)
+		cli.setinfo(ssh,password,ChangeName)
 		prompt.prompt = ChangeName + '>'
 		SwitchName = ChangeName
 	def do_write(args):
 		"""Save configuration."""
 
-	def do_setaccount(args):
+	def do_setaccount(self, args):
 		"""Modify administrative account."""
-		user, cur_pwd, new_pwd, confirm_pwd = input("New username: "), getpass("Current password: "), getpass("New password: "), getpass("Retype new password: ")
-		if new_pwd != confirm_pwd:
-			print("Confirm password is different.")
+		cli.setaccount(ssh,SwitchName)
+		print ("login again")
+		raise SystemExit
 
 	def do_setnetwork(args):
 		"""Set switch IP, subnet, gateway, management vlan."""
@@ -76,19 +76,19 @@ class Prompt(Cmd):
 
 	def do_settime(self, args):
 		"""Set SNTP server IP and timezone (support GMT+8 TPE only)."""
-		cli.settime(tn,password)
+		cli.settime(ssh,password)
 
 	def do_vlanadd(self, args):
 		"""Add a new vlan interface."""
-		cli.vlanadd(tn,password)
+		cli.vlanadd(ssh,password)
 
 	def do_vlandel(self, args):
 		"""Delete a new vlan interface."""
-		cli.vlandel(tn,password)
+		cli.vlandel(ssh,password)
 
 	def do_vlanset(self, args):
 		"""Set interfaces vlan membership."""
-		cli.vlanset(tn,password)
+		cli.vlanset(ssh,password)
 
 	def do_gencert(args):
 		"""Generate a new self-signed SSL certificate."""
@@ -153,17 +153,18 @@ class Prompt(Cmd):
 		"""change management vlan id"""
 		vlan_id = input("Vlan ID?: ")
 prompt = Prompt()
-tn = None
+ssh = None
 password = ''
 SwitchName = ''
-def run(_tn,_password,_SwitchName):
-	global tn
+def run(_ssh,_password,_SwitchName):
+	global ssh
 	global password
 	global SwitchName
-	tn = _tn
+	ssh = _ssh
 	password = _password
 	SwitchName = _SwitchName
 	prompt.prompt = SwitchName + '>'
+	print (prompt.prompt)
 	while True:
 		try:
 			prompt.cmdloop("Type exit/forceexit to quit, help for help.")
