@@ -126,7 +126,7 @@ def vlanset(ssh,password):
 	interface = input("Interface:")
 	vlan_id = input("vlan_id(1-4094):")
 	if int(vlan_id) < 2 or int(vlan_id) > 4094:
-		print ("Invallid id")
+		print ("Invalid id")
 		return
 	ssh.sendline(list_s[0])
 	ssh.sendline(list_s[1]+interface)
@@ -142,6 +142,30 @@ def vlanset(ssh,password):
 	ssh.sendline(list_s[4])
 	ssh.prompt(timeout=1)
 	output = ssh.before.decode('ascii')
+	print(output)
+	ssh.expect(r'.+')
+def trunk(ssh):
+	interface = input("Interface:")
+	vlan_id = input("vlan_id(1-4094):")
+	if int(vlan_id) < 2 or int(vlan_id) > 4094:
+		print ("Invalid id")
+		return
+	list_s = ['config t','interface Gi0/'+interface,'switchport mode trunk','switchport trunk allowed vlan add '+vlan_id,'end']
+	ssh.sendline(list_s[0])
+	ssh.sendline(list_s[1])
+	ssh.prompt(timeout=1)
+	output = ssh.before.decode('ascii')
+	if output.find("Incomplete") != -1 or output.find("Invalid") != -1:
+		print ("Invalid interface")
+		ssh.sendline(list_s[4])
+		ssh.expect(r'.+')
+		return
+	ssh.sendline(list_s[2])
+	ssh.sendline(list_s[3])
+	ssh.sendline(list_s[4])
+	ssh.prompt(timeout=1)
+	output = ssh.before.decode('ascii')
+	print(output)
 	ssh.expect(r'.+')
 def setaccount(ssh,SwitchName):
 	ChangeName = input("Username:")
@@ -159,7 +183,7 @@ def setaccount(ssh,SwitchName):
 	ssh.sendline(list_s[3]+user)
 	ssh.sendline(list_s[4])
 	ssh.prompt(timeout=1)
-	ssh.expect(r'.+') 
+	ssh.expect(r'.+')
 	ssh.logout()
 def write(ssh):
 	list_s = ['show boot','copy system:running-config ']
@@ -209,3 +233,70 @@ def getSwitchName(ssh):
 			switchname = element[9:]
 			break
 	return switchname[:len(switchname)-1]
+def setportchannel(ssh):
+	interfacerange_start = input("Configure interface from:")
+	interfacerange_end = input("to:")
+	channel = input("Assign the ports to a channel group (For channel group number, the range is 1 to 6):")
+	list_s = ['config t','interface range Gi0/'+interfacerange_start+'-'+interfacerange_end, 'channel-group '+channel+' mode active','end']
+	ssh.sendline(list_s[0])
+	ssh.sendline(list_s[1])
+	ssh.sendline(list_s[2])
+	ssh.sendline(list_s[3])
+	ssh.prompt(timeout=1)
+	output = ssh.before.decode('ascii')
+	print(output)
+	ssh.expect(r'.+')
+def clearportchannel(ssh):
+	channel = input("Enter port channel number:")
+	list_s = ['config t','no interface Port-channel '+channel, 'exit']
+	ssh.sendline(list_s[0])
+	ssh.sendline(list_s[1])
+	ssh.sendline(list_s[2])
+	ssh.prompt(timeout=1)
+	output = ssh.before.decode('ascii')
+	if 'Invalid' in output:
+		print ("Invalid port channel")
+	#print(output)
+	ssh.expect(r'.+')
+def setportstatus(ssh,mode):
+	interface = input("Enter the port number: ")
+	list_s = ['config t','interface Gi0/'+interface,'shutdown','no shutdown','end']
+	ssh.sendline(list_s[0])
+	ssh.sendline(list_s[1])
+	if mode == "d" :
+		ssh.sendline(list_s[2])
+	if mode == "e" :
+		ssh.sendline(list_s[3])
+	ssh.sendline(list_s[4])
+	ssh.prompt(timeout=1)
+	output = ssh.before.decode('ascii')
+	#print(output)
+	ssh.expect(r'.+')
+def uploadconfig(ssh):
+	username = input("Username:")
+	password = getpass("Password:")
+	host = input("Host:")
+	filename = input("Filename:")
+	if filename[:1] != '/':
+		filename = '/' + filename
+	list_s = ['copy ftp://'+username+':'+password+'@'+host+filename+' system:running-config','']
+	ssh.sendline(list_s[0])
+	ssh.sendline(list_s[1])
+	ssh.prompt(timeout=1)
+	output = ssh.before.decode('ascii')
+	print(output)
+	ssh.expect(r'.+')
+def downloadconfig(ssh):
+	username = input("Username:")
+	password = getpass("Password:")
+	host = input("Host:")
+	filename = input("Filename:")
+	if filename[:1] != '/':
+		filename = '/' + filename
+	list_s = ['copy system:running-config ftp://'+username+':'+password+'@'+host+filename,'']
+	ssh.sendline(list_s[0])
+	ssh.sendline(list_s[1])
+	ssh.prompt(timeout=1)
+	output = ssh.before.decode('ascii')
+	print(output)
+	ssh.expect(r'.+')
