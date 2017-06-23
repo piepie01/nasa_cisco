@@ -89,7 +89,13 @@ class Prompt(Cmd):
 
 	def do_vlanset(self, args):
 		"""Set interfaces vlan membership."""
-		cli.vlanset(ssh,password)
+		mode = input("trunk[t] or access[a]?")
+		while mode not in "ta":
+			mode = input("trunk[t] or access[a]?")
+		if mode == "t":
+			cli.trunk(ssh)
+		else:
+			cli.vlanset(ssh,password)
 
 	def do_gencert(args):
 		"""Generate a new self-signed SSL certificate."""
@@ -103,8 +109,9 @@ class Prompt(Cmd):
 			choice = input("Restore to factory configuration?(y/n)")
 		if choice == 'y':
 			nothing = 1
-	def do_uploadconfig(args):
+	def do_uploadconfig(self,args):
 		"""Upload a config file to switch."""
+		cli.uploadconfig(ssh)
 
 	def do_uploadcode(args):
 		"""Upload a firmware file to switch."""
@@ -112,28 +119,25 @@ class Prompt(Cmd):
 	def do_activatecode(args):
 		"""Activate the backup firmware code"""
 
-	def do_downloadconfig(args):
+	def do_downloadconfig(self,args):
 		"""Download a config file to local."""
+		cli.downloadconfig(ssh)
 
-	def do_setportchannel(args):
+	def do_setportchannel(self,args):
 		"""Configure port channel settings."""
-		available_mode = {'y':'enabled', 'n':'disabled'}
-		stp_mode = input("stp_mode (y/n)?")
-		while stp_mode not in available_mode:
-			stp_mode = input("stp_mode (y/n)?")
-		static_mode = input("static_mode (y/n)?")
-		while static_mode not in available_mode:
-			static_mode = input("static_mode (y/n)?")
+		cli.setportchannel(ssh)
 
-	def do_clearportchannel(args):
+	def do_clearportchannel(self,args):
 		"""Clear port channel settings."""
+		cli.clearportchannel(ssh)
 
-	def do_setportstatus(args):
+	def do_setportstatus(self,args):
 		"""Enable or disable ports."""
 		available_mode = {'e':'enabled', 'd':'disabled'}
 		mode = input("enable or disable a port(e/d)?")
 		while mode not in available_mode:
 			mode = input("enable or disable a port(e/d)?")
+		cli.setportstatus(ssh,mode)
 
 	def do_ping(self, args):
 		"""Ping an IP through the switch"""
