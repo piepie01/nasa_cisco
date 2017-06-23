@@ -161,6 +161,33 @@ def setaccount(ssh,SwitchName):
 	ssh.prompt(timeout=1)
 	ssh.expect(r'.+') 
 	ssh.logout()
+def write(ssh):
+	list_s = ['show boot','copy system:running-config ']
+	ssh.sendline(list_s[0])
+	ssh.prompt(timeout=1)
+	fileName = ssh.before.decode('ascii')
+	list_file = fileName.split('\n')
+	for element in list_file:
+		if element.find('Config file') != -1:
+			fileName = element[22:]
+			break
+	#print (fileName)
+	list_s[1]=list_s[1]+fileName
+	ssh.sendline(list_s[1])
+	ssh.sendline('')
+	ssh.sendline('')
+	ssh.prompt(timeout=1)
+	output = ssh.before.decode('ascii')
+	ssh.expect(r'.+')
+def ping(ssh, ipAddr, count, interval, size, SwitchName):
+	list_s = ['ping ip '+ipAddr+' repeat '+count+' timeout '+interval+' size '+size]
+	ssh.sendline(list_s[0])
+	ssh.prompt(timeout=1)
+	output = ssh.before.decode('ascii')
+	output = delete(output,list_s[0])
+	output = delete(output,SwitchName)
+	print (output)
+	ssh.expect(r'.+')
 def delete(s,goal):
 	temp_list = s.split('\n')
 	str_out = ''

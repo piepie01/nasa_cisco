@@ -5,6 +5,7 @@ import sys
 from lib import hpshell
 from lib import cli
 import time
+import socket
 
 def checkArgument():
 	if len(sys.argv) != 2:
@@ -12,21 +13,41 @@ def checkArgument():
 		print("Usage: http [user@]host")
 		print("(If not specified, username is admin.)")
 		sys.exit(0)
+def parseArgument():
+	if '@' in sys.argv[1]:
+		return sys.argv[1].split('@')
+	else:
+		return '',sys.argv[1]
+def testConnect(host):
+	print ("Try ssh to ",host)
+	con = socket.socket()
+	con.settimeout(5)
+	try:
+		con.connect((host,22))
+		print("Success!")
+		con.close()
+	except:
+		print("can't connect to ",host," with ssh.")
+		con.close()
+		sys.exit(0)
 if __name__ == "__main__":
 	checkArgument()
-	user = input("Username:")
-	print ("connecting ",sys.argv[1],"......")
-	ssh = pxssh.pxssh()
-	for count in range(1,3):
+	user, host = parseArgument()
+	if user == '':
+		user = input("Username:")
+	testConnect(host)
+	for count in range(1,4):
+		ssh = pxssh.pxssh()
 		password = getpass('password :')
 		if password:
 			try:
 				ssh.login(sys.argv[1],user,password,auto_prompt_reset=False)
 				break
 			except:
+				ssh.close()
 				print ("incorrect password")
 		if count==3:
-			print ("can't connect to ",sys.argv[1],", or incorrect password")
+			print ("incorrect password")
 			sys.exit(0)
 	
 	ssh.sendline("terminal length 0")

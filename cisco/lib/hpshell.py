@@ -57,8 +57,9 @@ class Prompt(Cmd):
 		cli.setinfo(ssh,password,ChangeName)
 		prompt.prompt = ChangeName + '>'
 		SwitchName = ChangeName
-	def do_write(args):
+	def do_write(self, args):
 		"""Save configuration."""
+		cli.write(ssh)
 
 	def do_setaccount(self, args):
 		"""Modify administrative account."""
@@ -93,14 +94,6 @@ class Prompt(Cmd):
 	def do_gencert(args):
 		"""Generate a new self-signed SSL certificate."""
 		print("Generating a new cert...")
-
-	def do_sethttps(args):
-		"""Set management connection protocal (HTTP or HTTPS)."""
-		print("Note: If the new protocal is different from current one, you have to login again.")
-		available_choice = {'http': ('enabled', 'disabled'), 'https':('disabled', 'enabled'), 'both':('enabled', 'enabled')}
-		choice = input("http only[http]/https only[https]/both[both]?")
-		while choice not in available_choice:
-			choice = input("http only[http]/https only[https]/both[both]?")
 
 	def do_reset(args):
 		"""Restore to factory configuration."""
@@ -142,9 +135,10 @@ class Prompt(Cmd):
 		while mode not in available_mode:
 			mode = input("enable or disable a port(e/d)?")
 
-	def do_ping(args):
+	def do_ping(self, args):
 		"""Ping an IP through the switch"""
-		ipAddr, count, interval, size = input("IP address: "), input("Count (1-15): "), input("Interval (1-60 Seconds): "), input("Size (0-13000Bytes): ")
+		ipAddr, count, interval, size = input("IP address: "), input("Count (1-15): "), input("Interval (1-60 Seconds): "), input("Size (40-1000Bytes): ")
+		cli.ping(ssh, ipAddr, count, interval, size, SwitchName)
 
 	def do_loopprotection(args):
 		"""loop protection on all interface"""
